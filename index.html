@@ -378,6 +378,9 @@
 
   class Cookie {
     static decode(cookie) {
+      if (cookie.trim() === '') {
+        return {};
+      }
       let list = cookie.split(';');
       let result = {};
       $.each(list, (idx, item) => {
