@@ -1,0 +1,487 @@
+<html lang="en">
+<head>
+    <script src="://code.jquery.com/jquery-3.5.1.min.js" integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0=" crossorigin="anonymous"></script>
+    <script src="://cdnjs.cloudflare.com/ajax/libs/moment.js/2.27.0/moment.min.js" integrity="sha512-rmZcZsyhe0/MAjquhTgiUcb4d9knaFc7b5xAfju483gbEXTkeJRUMIPk6s3ySZMYUHEcjKbjLjyddGWMrNEvZg==" crossorigin="anonymous"></script>
+    <script src="://cdnjs.cloudflare.com/ajax/libs/moment-timezone/0.5.31/moment-timezone-with-data-1970-2030.min.js" integrity="sha512-4szk+2R1QZsgTRbYdGZQjGUPNGGxetUFFsxSVAjC9L7smstBmPQtEkFto9JFLHvPVM7JlUdy2lMe62OWNSceyA==" crossorigin="anonymous"></script>
+    <script src="://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <script src="airports.js"></script>
+    <link rel="stylesheet" href="://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+    <link rel="stylesheet" href="://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
+    <title>WorldTime</title>
+    <style>
+        body {
+            margin: 0;
+        }
+        #wrapper {
+            width: 100%;
+            height: 100%;
+        }
+        #menu {
+            height: 30px;
+        }
+    </style>
+</head>
+<body>
+<div id="wrapper">
+    <div id="menu">
+        <button id="config" type="button" class="btn btn-light btn-sm" data-toggle="modal" data-target="#config-modal"><i class="fas fa-cog"></i></button>
+        <button id="double-left" type="button" class="btn btn-light btn-sm"><i class="fas fa-angle-double-left"></i></button>
+        <button id="left" type="button" class="btn btn-light btn-sm"><i class="fas fa-chevron-left"></i></button>
+        <button id="right" type="button" class="btn btn-light btn-sm"><i class="fas fa-chevron-right"></i></button>
+        <button id="double-right" type="button" class="btn btn-light btn-sm"><i class="fas fa-angle-double-right"></i></button>
+        <button id="zoom-out" type="button" class="btn btn-light btn-sm"><i class="fas fa-search-minus"></i></button>
+        <button id="zoom-in" type="button" class="btn btn-light btn-sm"><i class="fas fa-search-plus"></i></button>
+    </div>
+    <canvas id='canvas' width="100%" height="100%"></canvas>
+</div>
+<div class="modal fade" id="config-modal" tabindex="-1" role="dialog" aria-labelledby="label" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="label">Update Configuration</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label for="config-input" data-target="config-input">Airports</label>
+                    <input type="text" class="form-control" id="config-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="save-modal">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+<script lang="javascript">
+  const COLORS = {
+    INFO_BACKGROUND: '#05386B',
+    BORDER: 'rgba(100,100,100,0.5)',
+    TEXT_DARK: '#222222',
+    TEXT_LIGHT: '#eeeeee',
+    BACKGROUND: '#FFFFFF',
+    MORNING: '#8EE4AF',
+    DAYLIGHT: '#EDF5E1',
+    EVENING: '#8EE4AF',
+    NIGHT: '#379683',
+    WEEKDAY_BACKGROUND: '#EEEEEE',
+    HOLIDAY_BACKGROUND: '#FFDDDD'
+  };
+
+  const STYLES = {
+    MORNING: {
+      bg: COLORS.MORNING,
+      text: COLORS.TEXT_DARK
+    },
+    DAYLIGHT: {
+      bg: COLORS.DAYLIGHT,
+      text: COLORS.TEXT_DARK
+    },
+    EVENING: {
+      bg: COLORS.EVENING,
+      text: COLORS.TEXT_DARK
+    },
+    NIGHT: {
+      bg: COLORS.NIGHT,
+      text: COLORS.TEXT_LIGHT
+    },
+    WEEKDAY: {
+      bg: COLORS.WEEKDAY_BACKGROUND,
+      text: COLORS.TEXT_DARK
+    },
+    HOLIDAY: {
+      bg: COLORS.HOLIDAY_BACKGROUND,
+      text: COLORS.TEXT_DARK
+    }
+  };
+
+  let range = (c) => {
+    return Math.max(Math.min(255, Math.floor(c)), 0);
+  };
+
+  let getRGBA = (r, g, b, a) => {
+    return `rgba(${range(r)},${range(g)},${range(b)},${a})`;
+  };
+
+  let getRGB = (r, g, b) => {
+    return `rgb(${r},${g},${b})`;
+  };
+
+  let getStyleForHour = (hour) => {
+    if (hour <= 6) return STYLES.NIGHT;
+    if (hour <= 8) return STYLES.MORNING;
+    if (hour <= 17) return STYLES.DAYLIGHT;
+    if (hour <= 22) return STYLES.EVENING;
+    return STYLES.NIGHT;
+  };
+
+  class Drawer {
+    constructor(ctx) {
+      this.ctx = ctx;
+      this.font = 'Arial';
+    }
+
+    fillStyle(style) {
+      this.ctx.fillStyle = style;
+    }
+
+    strokeStyle(style, width) {
+      this.ctx.strokeStyle = style;
+      this.ctx.strokeWidth = width | 1;
+    }
+
+    fillRect(x, y, w, h) {
+      this.ctx.fillRect(x, y, w, h);
+    }
+
+    strokeRect(x, y, w, h) {
+      this.ctx.strokeRect(x, y, w, h);
+    }
+
+    line(x0, y0, x1, y1) {
+      this.ctx.beginPath();
+      this.ctx.moveTo(x0, y0);
+      this.ctx.lineTo(x1, y1);
+      this.ctx.stroke();
+    }
+
+    text(str, x, y, fontSize) {
+      this.ctx.font = `${fontSize}pt ${this.font}`;
+      this.ctx.fillText(str, x, y);
+    }
+  }
+
+  let isHoliday = (moment) => {
+    return moment.day() === 0 || moment.day() === 6;
+  };
+
+  class MainDrawer extends Drawer {
+    constructor(ctx, width, height) {
+      super(ctx);
+      this.width = width;
+      this.height = height;
+      this.widthPerHour = 60;
+    }
+
+    widthToMinutes(width) {
+      return width * 60 / this.widthPerHour;
+    }
+
+    setSize(width, height) {
+      this.width = width;
+      this.height = height;
+    }
+
+    clearScreen() {
+      this.fillStyle(COLORS.BACKGROUND);
+      this.fillRect(0, 0, this.width, this.height);
+    }
+
+    drawInfoBox(x, y, w, h, timeZoneInfo) {
+      this.fillStyle(COLORS.INFO_BACKGROUND);
+      this.fillRect(x, y, w-5, h);
+
+      this.fillStyle(COLORS.TEXT_LIGHT);
+      this.text(timeZoneInfo.name, x+5, y+25, 14);
+      this.text(timeZoneInfo.moment.format('YYYY-MM-DD ddd'), x+5, y + 50, 10);
+      this.text(timeZoneInfo.moment.format('HH:mm:ss Z'), x+5, y + 70, 12);
+    }
+
+    drawDateFrom(x, y, w, h, moment) {
+      let style = isHoliday(moment) ? STYLES.HOLIDAY : STYLES.WEEKDAY;
+      this.fillStyle(style.bg);
+      this.fillRect(x, y, w, h);
+
+      this.strokeStyle(COLORS.BORDER);
+      this.line(x, y, x, y+h);
+
+      this.fillStyle(style.text);
+      this.text(moment.format('YYYY-MM-DD ddd'), x + 5, y + 15, 10);
+    }
+
+    drawHour(x, y, w, h, hour, minutes) {
+      let style = getStyleForHour(hour);
+      this.fillStyle(style.bg);
+      this.fillRect(x, y, w, h);
+
+      this.strokeStyle(COLORS.BORDER, 1);
+      this.strokeRect(x, y, w, h);
+
+      this.fillStyle(style.text);
+      this.text(`${hour}:${pad(minutes)}`, x + 5, y + 15, 10);
+    }
+
+    drawTimeZone(x, y, w, h, timeZoneInfo, fromMoment) {
+      let infoWidth = 150;
+      this.drawInfoBox(x, y, infoWidth, h, timeZoneInfo);
+
+      let hour = fromMoment.hours();
+      let minutes = fromMoment.minutes();
+
+      let left = x + infoWidth;
+      let initialWidth = this.widthPerHour * (60 - minutes) / 60;
+      this.drawDateFrom(left, y, w - left, h, offsetMoment(fromMoment, 0));
+      this.drawHour(left, y + 20, initialWidth, h - 20, hour, minutes);
+      left += initialWidth;
+
+      for (let i=1; left < w; i++) {
+        let currHour = (hour + i)%24;
+
+        if (i === 0 || currHour === 0) {
+          let offsetDays = Math.floor((hour+i)/24);
+          this.drawDateFrom(left, y, w - left, h, offsetMoment(fromMoment, offsetDays));
+        }
+
+        this.drawHour(left, y + 20, this.widthPerHour, h - 20, currHour, 0);
+
+        left += this.widthPerHour;
+      }
+    }
+
+    draw(timeZones, startMoment) {
+      let margin = 5;
+      let n = timeZones.length;
+      let boxHeight = (this.height - (n-1)*margin)/n;
+      for (let i=0; i<n; i++) {
+        this.drawTimeZone(
+          0, (boxHeight + margin)*i, this.width, boxHeight,
+          timeZones[i], timeZones[i].getMoment(startMoment));
+      }
+    };
+  }
+
+  let offsetMoment = (m, offsetDays) => {
+    return moment(m).startOf('day').add(offsetDays || 0, 'days');
+  };
+
+  let pad = (minutes) => {
+    return (minutes < 10 ? '0' : '') + minutes;
+  };
+
+  class TimeZoneInfo {
+    constructor(tz, name) {
+      this.tz = tz;
+      this.name = name;
+      this.moment = moment().tz(tz);
+    }
+    getShiftedMoment(deltaMinutes) {
+      return moment(this.moment).add(deltaMinutes, 'minutes');
+    }
+    getTimeZoneText() {
+      return this.moment.format('Z');
+    }
+    getMoment(m) {
+      return moment(m).tz(this.tz);
+    }
+  }
+
+  let getTimeZones = (airports) => {
+    return airports.map(item => new TimeZoneInfo(getTimeZoneForAirport(item), item));
+  };
+
+  class WorldTime {
+    constructor(canvas) {
+      this.canvas = canvas;
+      this.drawer = new MainDrawer(canvas.getContext('2d'), canvas.width, canvas.height);
+      this.places = ['NRT','PDX','JFK'];
+      this.drawFromMoment = moment();
+      this.setupDnd();
+      window.setInterval(() => this.refresh(), 1000);
+    }
+
+    setPlaces(places) {
+      this.places = places;
+      this.refresh();
+    }
+
+    getPlaces() {
+      return this.places;
+    }
+
+    refresh() {
+      this.drawer.setSize(this.canvas.width, this.canvas.height);
+      this.drawer.clearScreen();
+      this.drawer.draw(getTimeZones(this.places), this.drawFromMoment);
+    };
+
+    zoomOut() {
+      if (this.drawer.widthPerHour > 30) {
+        this.drawer.widthPerHour = this.drawer.widthPerHour / 1.5;
+        this.refresh();
+      }
+    }
+
+    zoomIn() {
+      if (this.drawer.widthPerHour < 200) {
+        this.drawer.widthPerHour = this.drawer.widthPerHour * 1.5;
+        this.refresh();
+      }
+    }
+
+    nextDay() {
+      this.drawFromMoment.add(1, 'days');
+      this.refresh();
+    }
+
+    prevDay() {
+      this.drawFromMoment.add(-1, 'days');
+      this.refresh();
+    }
+
+    nextWeek() {
+      this.drawFromMoment.add(7, 'days');
+      this.refresh();
+    }
+
+    prevWeek() {
+      this.drawFromMoment.add(-7, 'days');
+      this.refresh();
+    }
+
+    reset() {
+      this.drawer.widthPerHour = 60;
+      this.refresh();
+    }
+
+    setupDnd() {
+      let x, y, dx, dy;
+      let originalMoment;
+
+      let onDown = (e) => {
+        x = e.clientX;
+        y = e.clientY;
+        originalMoment = moment(this.drawFromMoment);
+      };
+
+      let onUp = () => {
+        x = undefined;
+      };
+
+      let onMove = (e) => {
+        if (x !== undefined) {
+          dx = e.clientX - x;
+          dy = e.clientY - y;
+          this.drawFromMoment = moment(originalMoment).add(-this.drawer.widthToMinutes(dx), 'minutes');
+          this.refresh();
+        }
+      };
+
+      $(this.canvas).on('mousedown', onDown);
+      $(this.canvas).on('mousemove', onMove);
+      $(this.canvas).on('mouseup', onUp);
+    }
+  }
+
+  class Cookie {
+    static decode(cookie) {
+      let list = cookie.split(';');
+      let result = {};
+      $.each(list, (idx, item) => {
+        let arr = item.split('=');
+        result[decodeURIComponent(arr[0].trim())] = decodeURIComponent(arr[1].trim());
+      });
+      return result;
+    }
+
+    static encode(map) {
+      return $.map(Object.keys(map), (key) => encodeURIComponent(key) + '=' + encodeURIComponent(map[key]) + ';')
+        .join();
+    }
+
+    static load() {
+      return Cookie.decode(document.cookie);
+    }
+
+    static save(map) {
+      document.cookie = Cookie.encode(map);
+    }
+
+    static set(name, value) {
+      let loaded = {};
+      loaded[name] = value;
+      Cookie.save(loaded);
+    }
+
+    static get(name, defaultValue) {
+      let loaded = Cookie.load();
+      return loaded[name] || defaultValue;
+    }
+  }
+
+  let fitCanvas = (canvas, worldTime) => {
+    let wrapper = $('#wrapper');
+    canvas.attr('width', wrapper.width());
+    canvas.attr('height', wrapper.height()-30);
+        worldTime.refresh();
+  };
+
+  let setUpModal = (worldTime) => {
+    let config = $('#config-modal');
+    let input = $('#config-input');
+
+    config.on('show.bs.modal', () => {
+      input.val(worldTime.getPlaces().join(','));
+    });
+
+    config.on('shown.bs.modal', () => {
+      input.eq(0).focus();
+    });
+
+    let onSubmit = () => {
+      let places = input.val().split(',');
+      worldTime.setPlaces(places);
+      Cookie.set('places', places.join(','));
+      config.modal('hide');
+    };
+
+    input.on('keypress', (e) => {
+      let key = e.keyCode || e.charCode || 0;
+      if (key === 13) {
+        onSubmit();
+      }
+    });
+
+    $('#save-modal').click(onSubmit);
+  };
+
+  $(function() {
+    let canvas = $('#canvas');
+    let worldTime = new WorldTime(canvas[0]);
+    worldTime.setPlaces(Cookie.get('places', 'NRT,PDX').split(','));
+
+    fitCanvas(canvas, worldTime);
+    $(window).resize(() => fitCanvas(canvas, worldTime));
+
+    setUpModal(worldTime);
+    $('#zoom-in').click(() => worldTime.zoomIn());
+    $('#zoom-out').click(() => worldTime.zoomOut());
+    $('#double-left').click(() => worldTime.prevWeek());
+    $('#left').click(() => worldTime.prevDay());
+    $('#right').click(() => worldTime.nextDay());
+    $('#double-right').click(() => worldTime.nextWeek());
+
+    $(window).keydown((e) => {
+      if (e.key === '-') {
+        worldTime.zoomOut();
+      } else if (e.key === '+') {
+        worldTime.zoomIn();
+      } else if (e.key === '0') {
+        worldTime.reset();
+      } else if (e.key === 'ArrowRight') {
+        worldTime.nextDay();
+      } else if (e.key === 'ArrowLeft') {
+        worldTime.prevDay();
+      } else if (e.key === 'Enter') {
+        $('#config-modal').modal('show');
+      } else {
+        console.log(e.key, e.keyCode);
+      }
+    })
+  });
+</script>
+</body>
+</html>
