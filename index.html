@@ -187,9 +187,10 @@
       this.fillRect(x, y, w-5, h);
 
       this.fillStyle(COLORS.TEXT_LIGHT);
-      this.text(timeZoneInfo.name, x+5, y+25, 14);
-      this.text(timeZoneInfo.moment.format('YYYY-MM-DD ddd'), x+5, y + 50, 12);
-      this.text(timeZoneInfo.moment.format('HH:mm:ss Z'), x+5, y + 70, 14);
+      this.text(timeZoneInfo.name + ' (' + timeZoneInfo.moment.zoneAbbr() + ')', x+5, y+25, 14);
+      this.text(timeZoneInfo.moment.tz().replace('_', ' '), x+5, y+42, 10);
+      this.text(timeZoneInfo.moment.format('YYYY-MM-DD ddd'), x+5, y + 65, 12);
+      this.text(timeZoneInfo.moment.format('HH:mm:ss Z'), x+5, y + 88, 14);
     }
 
     drawDateFrom(x, y, w, h, moment) {
