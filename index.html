@@ -19,7 +19,7 @@
             height: 100%;
         }
         #menu {
-            height: 30px;
+            height: 40px;
         }
     </style>
 </head>
@@ -29,7 +29,7 @@
         <button id="config" type="button" class="btn btn-light btn-lg" data-toggle="modal" data-target="#config-modal" title="Configure"><i class="fas fa-cog"></i></button>
         <button id="double-left" type="button" class="btn btn-light btn-lg" title="Prev week"><i class="fas fa-angle-double-left"></i></button>
         <button id="left" type="button" class="btn btn-light btn-lg" title="Prev day"><i class="fas fa-chevron-left"></i></button>
-        <button id="now" type="button" class="btn btn-light btn-lg" title="Go back to now"><i class="fas fa-circle"></i></button>
+        <button id="now" type="button" class="btn btn-light btn-lg" title="Go back to now"><i class="fas fa-clock"></i></button>
         <button id="right" type="button" class="btn btn-light btn-lg" title="Next day"><i class="fas fa-chevron-right"></i></button>
         <button id="double-right" type="button" class="btn btn-light btn-lg" title="Next week"><i class="fas fa-angle-double-right"></i></button>
         <button id="zoom-out" type="button" class="btn btn-light btn-lg" title="Zoom out"><i class="fas fa-search-minus"></i></button>
@@ -429,7 +429,7 @@
   let fitCanvas = (canvas, worldTime) => {
     let wrapper = $('#wrapper');
     canvas.attr('width', wrapper.width());
-    canvas.attr('height', wrapper.height()-30);
+    canvas.attr('height', wrapper.height()-40);
         worldTime.refresh();
   };
 
