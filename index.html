@@ -226,16 +226,17 @@
 
       let left = x + infoWidth;
       let initialWidth = this.widthPerHour * (60 - minutes) / 60;
-      this.drawDateFrom(left, y, w - left, h, offsetMoment(fromMoment, 0));
+      this.drawDateFrom(left, y, w - left, h, fromMoment);
       this.drawHour(left, y + 20, initialWidth, h - 20, hour, minutes);
       left += initialWidth;
 
+      let currMoment = moment(fromMoment).startOf('hour');
       for (let i=1; left < w; i++) {
-        let currHour = (hour + i)%24;
+        currMoment.add(1, 'hour');
+        let currHour = currMoment.hours();
 
-        if (i === 0 || currHour === 0) {
-          let offsetDays = Math.floor((hour+i)/24);
-          this.drawDateFrom(left, y, w - left, h, offsetMoment(fromMoment, offsetDays));
+        if (currHour === 0) {
+          this.drawDateFrom(left, y, w - left, h, currMoment);
         }
 
         this.drawHour(left, y + 20, this.widthPerHour, h - 20, currHour, 0);
@@ -255,10 +256,6 @@
       }
     };
   }
-
-  let offsetMoment = (m, offsetDays) => {
-    return moment(m).startOf('day').add(offsetDays || 0, 'days');
-  };
 
   let pad = (minutes) => {
     return (minutes < 10 ? '0' : '') + minutes;
