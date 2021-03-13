@@ -245,7 +245,7 @@
     draw(timeZones, startMoment) {
       let margin = 5;
       let n = timeZones.length;
-      let boxHeight = (this.height - (n-1)*margin)/n;
+      let boxHeight = 100;
       for (let i=0; i<n; i++) {
         this.drawTimeZone(
           0, (boxHeight + margin)*i, this.width, boxHeight,
