@@ -29,6 +29,35 @@ const COUNTRY_HOLIDAYS = {
     '2021-11-11': 'Veterans Day',
     '2021-11-25': 'Thanksgiving Day',
     '2021-12-24': 'Christmas Day',
+  },
+  CN: {
+    '2021-01-01': 'New Year\'s Day',
+    '2021-02-11': 'Chinese New Year',
+    '2021-02-12': 'Chinese New Year',
+    '2021-02-13': 'Chinese New Year',
+    '2021-02-14': 'Chinese New Year',
+    '2021-02-15': 'Chinese New Year',
+    '2021-02-16': 'Chinese New Year',
+    '2021-02-17': 'Chinese New Year',
+    '2021-04-03': 'Qingming Festival',
+    '2021-04-04': 'Qingming Festival',
+    '2021-04-05': 'Qingming Festival',
+    '2021-05-03': 'May Day',
+    '2021-05-04': 'May Day',
+    '2021-05-05': 'May Day',
+    '2021-06-12': 'Dragon Boat Festival',
+    '2021-06-13': 'Dragon Boat Festival',
+    '2021-06-14': 'Dragon Boat Festival',
+    '2021-09-19': 'Mid Autumn Festival',
+    '2021-09-20': 'Mid Autumn Festival',
+    '2021-09-21': 'Mid Autumn Festival',
+    '2021-10-01': 'National Holiday',
+    '2021-10-02': 'National Holiday',
+    '2021-10-03': 'National Holiday',
+    '2021-10-04': 'National Holiday',
+    '2021-10-05': 'National Holiday',
+    '2021-10-06': 'National Holiday',
+    '2021-10-07': 'National Holiday',
   }
 };
 
@@ -63,6 +92,11 @@ const TIMEZONE_COUNTRY_MAPPING = {
   'America/Adak': 'US',
   'America/Metlakatla': 'US',
   'Pacific/Honolulu': 'US',
+  'Asia/Shanghai': 'CN',
+  'Asia/Urumqi': 'CN',
+  'Asia/Harbin': 'CN',
+  'Asia/Chongqing': 'CN',
+  'Asia/Kashgar': 'CN',
 };
 
 function getHoliday(moment) {
