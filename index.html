@@ -6,6 +6,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
     <script src="//stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
     <script src="airports.js"></script>
+    <script src="holidays.js"></script>
     <link rel="stylesheet" href="//stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css" integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/font-awesome/5.14.0/css/all.min.css" integrity="sha512-1PKOgIY59xJ8Co8+NE6FZ+LOAZKjy+KY8iq0G4B3CyeY6wYHN3yt9PW0XpSriVlkMXe40PTKnXrLnZ9+fkDaog==" crossorigin="anonymous" />
     <title>WorldTime</title>
@@ -195,6 +196,11 @@
 
     drawDateFrom(x, y, w, h, moment) {
       let style = isHoliday(moment) ? STYLES.HOLIDAY : STYLES.WEEKDAY;
+      let holiday = getHoliday(moment) || '';
+      if (holiday !== '') {
+        style = STYLES.HOLIDAY;
+        holiday = ' / ' + holiday;
+      }
       this.fillStyle(style.bg);
       this.fillRect(x, y, w, h);
 
@@ -202,7 +208,7 @@
       this.line(x, y, x, y+h);
 
       this.fillStyle(style.text);
-      this.text(moment.format('YYYY-MM-DD ddd'), x + 5, y + 15, 10);
+      this.text(moment.format('YYYY-MM-DD ddd') + holiday, x + 5, y + 15, 10);
     }
 
     drawHour(x, y, w, h, hour, minutes) {
